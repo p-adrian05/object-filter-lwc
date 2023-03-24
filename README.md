@@ -1,7 +1,7 @@
 # Object Filter LWC
 Provides a dynamic multi-filter component for any object.
 
-<a href="https://login.salesforce.com/packaging/installPackage.apexp?p0=04t7Q000000YyymQAC">
+<a href="https://login.salesforce.com/packaging/installPackage.apexp?p0=04t7Q000000YyywQAC">
 <img alt="Deploy to Salesforce" src="https://raw.githubusercontent.com/afawcett/githubsfdeploy/master/deploy.png">
 </a>
 
