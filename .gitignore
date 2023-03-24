@@ -11,6 +11,7 @@ IlluminatedCloud/
 # LWC VSCode autocomplete
 **/lwc/jsconfig.json
 *.iml
+.idea/
 # LWC Jest coverage reports
 coverage/
 
