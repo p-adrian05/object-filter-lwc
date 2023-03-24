@@ -5,8 +5,6 @@
     <isExposed>true</isExposed>
     <masterLabel>Object Filter</masterLabel>
     <targets>
-        <target>lightning__AppPage</target>
         <target>lightning__RecordPage</target>
-        <target>lightning__HomePage</target>
     </targets>
 </LightningComponentBundle>
