@@ -1,0 +1,64 @@
+<template>
+    <lightning-card title={title} class="slds-card_boundary slds-align_absolute-center">
+
+        <div class="slds-p-around_medium ">
+            <h3 class="slds-text-link_reset" onclick={handleClearAllButton}>Clear All</h3>
+            <lightning-combobox
+                    options={logicalConditions}
+                    name="logicalCondition"
+                    value={selectedLogicalCondition}
+                    onchange={handleLogicalConditionSelected}
+                    validity="">
+            </lightning-combobox>
+            <c-object-filter-form
+                    object-api-name={objectApiName}
+                    operator-options={operatorOptions}
+            ></c-object-filter-form>
+            <lightning-layout horizontal-align="spread" class="slds-m-top_medium">
+                    <template if:true={editFilter}>
+                        <lightning-layout-item >
+                            <lightning-button label="Cancel" onclick={handleClearFilterButton}></lightning-button>
+                        </lightning-layout-item>
+                    </template>
+                    <template if:false={editFilter}>
+                        <lightning-layout-item >
+                            <lightning-button label="Clear" onclick={handleClearFilterButton}></lightning-button>
+                        </lightning-layout-item>
+                    </template>
+                    <template if:true= {editFilter}>
+                        <lightning-layout-item >
+                            <lightning-button label="Update" onclick={handleUpdateFilterButton} variant="brand"></lightning-button>
+                        </lightning-layout-item>
+                    </template>
+                    <template if:false={editFilter}>
+                        <lightning-layout-item >
+                            <lightning-button label="Add" onclick={handleAddFilterButton} variant="brand"></lightning-button>
+                        </lightning-layout-item>
+                    </template>
+            </lightning-layout>
+
+                <template if:true={showCustomConditionLogicInput}>
+
+                    <lightning-input
+                            type="text"
+                            onchange={handleCustomConditionLogicInput}
+                            value={customConditionLogic}
+                            label="Custom Logic">
+                    </lightning-input>
+
+                </template>
+            <template if:true={queryString}>
+                <lightning-textarea value={queryString} read-only="true"></lightning-textarea>
+            </template>
+
+
+                <c-object-filters
+                        object-filters={filterList}
+                        onselectfilter={handleSelectFilter}
+                        onremovefilter={handleRemoveFilter}
+                ></c-object-filters>
+
+
+        </div>
+    </lightning-card>
+</template>

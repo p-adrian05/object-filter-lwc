@@ -1,0 +1,28 @@
+<template>
+    <div>
+        <lightning-combobox
+                options={fieldOptions}
+                value={selectedFieldOption}
+                placeholder="Select a Field"
+                onchange={handleFieldSelected}
+                validity="">
+        </lightning-combobox>
+
+        <lightning-combobox
+                options={operatorOptions}
+                name="Operator"
+                value={selectedOperator}
+                placeholder="Select an Operator"
+                onchange={handleOperatorSelected}
+                validity="">
+        </lightning-combobox>
+
+        <lightning-input
+                type={selectedInputType}
+                onchange={handleOnChangeOperatorInputValue}
+                value={operatorValue}
+                placeholder="Enter value">
+        </lightning-input>
+
+    </div>
+</template>

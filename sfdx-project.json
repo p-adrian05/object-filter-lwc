@@ -1,0 +1,21 @@
+{
+  "packageDirectories": [
+    {
+      "path": "force-app",
+      "default": true,
+      "package": "Object Filter LWC",
+      "versionName": "ver 1.0",
+      "versionNumber": "1.0.0.NEXT",
+      "versionDescription": ""
+    }
+  ],
+  "name": "ObjectFilterLWC",
+  "namespace": "",
+  "sfdcLoginUrl": "https://login.salesforce.com",
+  "sourceApiVersion": "57.0",
+  "packageAliases": {
+    "Object Filter LWC": "0Ho7Q000000XZW8SAO",
+    "Object Filter LWC@0.1.0-1": "04t7Q000000YyyhQAC",
+    "Object Filter LWC@1.0.0-1": "04t7Q000000YyymQAC"
+  }
+}
