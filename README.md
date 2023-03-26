@@ -55,5 +55,5 @@ Provides a dynamic multi-filter component for any object.
 ![img.png](/documantation/images/objectFilterSelectField.png)
 ![img.png](/documantation/images/objectFilterWithOperator.png)
 ![img.png ](/documantation/images/objectFilterUpdate.png)
-![img.png](/documantation/images/objectFilterUpdate.png)
+![img.png ](/documantation/images/objectFilterORCondition.png)
 ![img.png](/documantation/images/objectFilterCustomCondition.png)
