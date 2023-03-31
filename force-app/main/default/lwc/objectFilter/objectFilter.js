@@ -16,10 +16,8 @@ const OPERATOR_LESS_THAN = '<';
 const OPERATOR_GREATER_THAN = '>';
 const OPERATOR_LESS_OR_EQUAL = '<=';
 const OPERATOR_GREATER_OR_EQUAL = '>=';
-const OPERATOR_CONTAIN = 'contain';
-const OPERATOR_NOT_CONTAIN = 'not_contain';
-const OPERATOR_START_WITH = 'start_with';
-const OPERATOR_END_WITH = 'end_with';
+const OPERATOR_LIKE = 'like';
+const OPERATOR_NOT_LIKE = 'not_like';
 const OPERATOR_LABEL_MAP = new Map([
     [OPERATOR_EQUAL,'equals'],
     [OPERATOR_NOT_EQUAL,'not equal to'],
@@ -27,15 +25,13 @@ const OPERATOR_LABEL_MAP = new Map([
     [OPERATOR_GREATER_THAN,'greater than'],
     [OPERATOR_LESS_OR_EQUAL,'less or equal'],
     [OPERATOR_GREATER_OR_EQUAL,'greater or equal'],
-    [OPERATOR_CONTAIN,'contain'],
-    [OPERATOR_NOT_CONTAIN,'does not contain'],
-    [OPERATOR_START_WITH,'start with'],
-    [OPERATOR_END_WITH,'end with']
+    [OPERATOR_LIKE,'like'],
+    [OPERATOR_NOT_LIKE,'not like'],
 ]);
 
 const DEFAULT_TITLE = "Filters";
 const DEFAULT_OBJECT_API_NAME= "Account";
-const INVALID_CONDITION_LOGIC_WARNING_MESSAGE = 'Invalid custom logic input! It can contains only AND, OR, (,) characters.';
+const INVALID_CONDITION_LOGIC_WARNING_MESSAGE = 'Invalid input! It can contains only AND, OR, (,) characters.';
 const INVALID_FILTER_INDEX_WARNING_MESSAGE = 'Invalid filter index!';
 const NUMBER_FIELD_TYPES = ['datetime', 'date','time', 'integer', 'double', 'percent', 'number', 'currency'];
 const VALID_CUSTOM_LOGIC_INPUT_CHARACTERS = ['(',')','A','N','D','O','R',' '];
@@ -43,7 +39,7 @@ export default class ObjectFilter extends LightningElement {
 
     @api title = DEFAULT_TITLE;
     @api objectApiName = DEFAULT_OBJECT_API_NAME;
-    @track filterList = [];
+    @api filterList = [];
     @track logicalConditions = [];
     @track operatorOptions = [];
     @track selectedLogicalCondition = DEFAULT_CONDITION;
@@ -51,38 +47,49 @@ export default class ObjectFilter extends LightningElement {
     @track editFilter = false;
 
     openedFilterId;
-    @track customConditionLogic = '';
+    @track customLogicalCondition;
     showCustomConditionLogicInput;
 
     @track queryString;
 
     @api
     getFilterState(){
-        return new FilterState(this.filterList,
-            this.getQueryFilterString(),
-            this.selectedLogicalCondition,
-            this.customConditionLogic);
+        const filterState = new FilterState();
+        filterState.filterList = this.filterList;
+        filterState.filterString = this.getQueryFilterString();
+        filterState.filterStringWithBinds = this.getQueryFilterStringWithBinds();
+        filterState.logicalCondition = this.selectedLogicalCondition;
+        filterState.logicalOrder = this.customLogicalCondition;
+        return filterState;
     }
     @api loadFilterState(filterState){
         this.resetComponent();
         if(filterState && filterState.filterList){
-            this.filterList = filterState.filterList.map(filter=>{
-                return new Filter(filter.id,filter.field,filter.operator,filter.operatorValue);
+            this.filterList = filterState.filterList.map(filterToLoad=>{
+                const filter = new Filter(filterToLoad.id,filterToLoad.field,filterToLoad.operator,filterToLoad.operatorValue);
+                filter.index = filterToLoad.index;
+                return filter;
             });
-            this.reIndexFilters();
 
             if(filterState.logicalCondition === CONDITION_CUSTOM){
                 this.showCustomConditionLogicInput = true;
-                this.customConditionLogic = filterState.customLogicalCondition;
+                this.customLogicalCondition = filterState.logicalOrder;
             }else{
-                this.customConditionLogic = this.calculateLogicalOrder();
+                this.reIndexFilters();
+                this.customLogicalCondition = this.calculateLogicalOrder();
             }
             this.selectedLogicalCondition = filterState.logicalCondition;
-            this.queryString = filterState.filterString;
-
+            this.queryString = this.getQueryFilterString();
         }
     }
-
+    @api resetComponent(){
+        this.resetForm();
+        this.filterList = [];
+        this.queryString = null;
+        this.customLogicalCondition = '';
+        this.selectedLogicalCondition = DEFAULT_CONDITION;
+        this.showCustomConditionLogicInput = false;
+    }
 
     connectedCallback() {
         this.logicalConditions = this.createOptionsListFromMap(CONDITION_LABEL_MAP);
@@ -103,35 +110,44 @@ export default class ObjectFilter extends LightningElement {
     }
     handleUpdateFilterButton(event){
         let filterForm = this.template.querySelector('c-object-filter-form');
-
+        let selectedFilter = filterForm.selectedField;
         this.filterList.forEach(filter=>{
             if(filter.id=== this.openedFilterId){
-                filter.field = filterForm.selectedField;
-                filter.operator = filterForm.selectedOperator;
-                filter.operatorValue = filterForm.operatorValue;
+               selectedFilter = filter;
             }
         });
+        selectedFilter.field = filterForm.selectedField;
+        selectedFilter.operator = filterForm.selectedOperator;
+        try{
+            selectedFilter.setOperatorValue(filterForm.operatorValue);
+        }catch (e){
+            this.showWarningMessage(e.message);
+            return;
+        }
         this.filterList = [...this.filterList];
         this.resetForm();
         this.queryString = this.getQueryFilterString();
     }
     handleAddFilterButton(event){
         let filterForm = this.template.querySelector('c-object-filter-form');
-
         if(filterForm.selectedField && filterForm.selectedOperator){
             let filter = new Filter();
-
             filter.id = new Date().getTime()+this.filterList.length+1;
             filter.field = filterForm.selectedField;
             filter.operator = filterForm.selectedOperator;
-            filter.operatorValue = filterForm.operatorValue;
+            try{
+                filter.setOperatorValue(filterForm.operatorValue);
+            }catch (e){
+                this.showWarningMessage(e.message);
+                return;
+            }
 
             this.filterList.push(filter);
             this.filterList = [...this.filterList];
 
             this.reIndexFilters();
             this.resetForm();
-            this.customConditionLogic = this.calculateLogicalOrder();
+            this.customLogicalCondition = this.calculateLogicalOrder();
             this.queryString = this.getQueryFilterString();
         }
     }
@@ -148,21 +164,14 @@ export default class ObjectFilter extends LightningElement {
     handleClearAllButton(event){
       this.resetComponent();
     }
-    resetComponent(){
-        this.resetForm();
-        this.filterList = [];
-        this.queryString = null;
-        this.customConditionLogic = '';
-        this.selectedLogicalCondition = DEFAULT_CONDITION;
-        this.showCustomConditionLogicInput = false;
-    }
+
     handleRemoveFilter(event){
         let indexToDelete = this.findFilterById(event.detail.filterId);
         if(indexToDelete!==-1){
              this.filterList.splice(indexToDelete,1);
              this.reIndexFilters();
              this.filterList = [...this.filterList];
-             this.customConditionLogic = this.calculateLogicalOrder();
+             this.customLogicalCondition = this.calculateLogicalOrder();
              this.queryString = this.getQueryFilterString();
         }
     }
@@ -185,13 +194,13 @@ export default class ObjectFilter extends LightningElement {
     }
     handleCustomConditionLogicInput(event){
         if(event.detail.value.trim().length===0){
-            this.customConditionLogic = this.calculateLogicalOrder();
+            this.customLogicalCondition = this.calculateLogicalOrder();
             this.queryString = this.getQueryFilterString();
         }else{
             if(!this.validateCustomConditionLogicInput(event.detail.value.trim())){
                 this.showWarningMessage(INVALID_CONDITION_LOGIC_WARNING_MESSAGE);
             }else{
-                this.customConditionLogic = event.detail.value;
+                this.customLogicalCondition = event.detail.value;
                 this.queryString = this.getQueryFilterString();
             }
         }
@@ -214,15 +223,12 @@ export default class ObjectFilter extends LightningElement {
         this.selectedLogicalCondition = event.detail.value;
         this.showCustomConditionLogicInput = event.detail.value === CONDITION_CUSTOM;
 
-        this.customConditionLogic = this.calculateLogicalOrder();
+        this.customLogicalCondition = this.calculateLogicalOrder();
         this.queryString = this.getQueryFilterString();
-
     }
     calculateLogicalOrder(){
-        let logicalCondition = this.selectedLogicalCondition;
-        if(this.selectedLogicalCondition===CONDITION_CUSTOM){
-            logicalCondition = DEFAULT_CONDITION;
-        }
+        const logicalCondition = this.selectedLogicalCondition === CONDITION_CUSTOM ?
+                                DEFAULT_CONDITION : this.selectedLogicalCondition;
         let orderStr = '';
         if(this.filterList.length===1){
             return '1';
@@ -244,15 +250,25 @@ export default class ObjectFilter extends LightningElement {
             }
             i++;
         }
-        return orderStr;
+        return orderStr.trim();
     }
 
     @api getQueryFilterString(){
+        return this.calculateQueryString((filter)=>{
+            return filter.toString();
+        });
+    }
+    getQueryFilterStringWithBinds(){
+        return this.calculateQueryString((filter)=>{
+            return filter.toStringWithBindVariable();
+        });
+    }
+    calculateQueryString(handleFilterCallback){
         let filterQuery = '';
         try{
-            for(let i = 0; i<this.customConditionLogic.length;i++){
-                let charCode = this.customConditionLogic.charCodeAt(i);
-                let nextCharCode = this.customConditionLogic.charCodeAt(i+1);
+            for(let i = 0; i<this.customLogicalCondition.length; i++){
+                let charCode = this.customLogicalCondition.charCodeAt(i);
+                let nextCharCode = this.customLogicalCondition.charCodeAt(i+1);
                 let actualStringIndexOfFilter = '';
 
                 if(charCode>48 && charCode<58){
@@ -267,24 +283,22 @@ export default class ObjectFilter extends LightningElement {
                         this.showWarningMessage(INVALID_FILTER_INDEX_WARNING_MESSAGE);
                         return filterQuery;
                     }else{
-                        filterQuery+= filter.toString();
+                        filterQuery+= handleFilterCallback(filter);
                     }
                 }else{
                     filterQuery+=String.fromCharCode(charCode);
                 }
             }
         }catch (e){
-            console.log(JSON.stringify(e));
+            console.error(JSON.stringify(e));
         }
-
-        return filterQuery;
+        return filterQuery.trim();
     }
-     showWarningMessage(message,title) {
+    showWarningMessage(message,title) {
         if(!title) title = 'Warning!';
         const event = new ShowToastEvent({variant: 'warning', title: title, message: String(message)});
         dispatchEvent(event)
     }
-
 
 
 }
@@ -292,23 +306,18 @@ class FilterState{
 
     filterList = [];
     filterString;
+    filterStringWithBinds;
     logicalCondition;
-    customLogicalCondition;
-
-    constructor(filterList,filterString,logicalCondition,customLogicalCondition) {
-        this.filterList = filterList;
-        this.filterString = filterString;
-        this.logicalCondition = logicalCondition;
-        this.customLogicalCondition = customLogicalCondition;
-    }
+    logicalOrder;
 
 }
 class Filter{
-    id='';
-    index='';
+    id;
+    index;
     field;
-    operator ='';
-    operatorValue='';
+    operator;
+    operatorValue;
+    bindVariable;
 
     constructor(id,field,operator,operatorValue) {
         this.id = id;
@@ -316,29 +325,44 @@ class Filter{
         this.operator = operator;
         this.operatorValue = operatorValue;
     }
-
+    setOperatorValue(operatorValue){
+        if(this.field.type.toLowerCase() ==='boolean') {
+            if (operatorValue !== 'true' && operatorValue !== 'false') {
+                throw new Error('Please add true or false value for Boolean type!');
+            }
+        }
+        if(operatorValue === null || operatorValue === undefined || operatorValue.trim() === ''){
+            this.operatorValue = 'null';
+        }else{
+            this.operatorValue = operatorValue;
+        }
+    }
     toString(){
-        let numberFieldTypes = NUMBER_FIELD_TYPES;
-        let tempQuery ='';
-        if(!this.operatorValue || this.operatorValue.trim() === ""){
-            this.operatorValue = "";
+        let tempQuery = '';
+
+        if(this.operatorValue==='null') {
+           tempQuery = this.toStringWithOperatorValue(null);
+        }else if (NUMBER_FIELD_TYPES.includes(this.field.type.toLowerCase()) || this.field.type.toLowerCase()==='boolean') {
+            tempQuery = this.toStringWithOperatorValue(this.operatorValue);
         }
-        if(this.operator === OPERATOR_CONTAIN) {
-            tempQuery= ' '+this.field.apiName +' like '+"'%"+this.operatorValue+"%'";
-        } else if(this.operator === OPERATOR_NOT_CONTAIN) {
-            tempQuery= ' (not '+this.field.apiName +' like '+"'%"+this.operatorValue+"%' )";
+        else{
+            tempQuery = this.toStringWithOperatorValue(`'${this.operatorValue}'`);
         }
-        else if(this.operator === OPERATOR_START_WITH) {
-            tempQuery= ' '+this.field.apiName +' like '+"'"+this.operatorValue+"%'";
-        }
-        else if(this.operator === OPERATOR_END_WITH) {
-            tempQuery= ' '+this.field.apiName +' like '+"'%"+this.operatorValue+"'";
-        }
-        else {
-            tempQuery= ' '+this.field.apiName +' '+this.operator+' '+"'"+this.operatorValue+"'";
-        }
-        if(numberFieldTypes.includes(this.field.type.toLowerCase())) {
-            tempQuery = tempQuery.replaceAll("'", " ");
+        return tempQuery;
+    }
+    toStringWithBindVariable(){
+        this.bindVariable = 'value'+this.index;
+        return this.toStringWithOperatorValue(':'+this.bindVariable);
+    }
+    toStringWithOperatorValue(operatorValue){
+        let tempQuery = '';
+        switch(this.operator) {
+            case OPERATOR_NOT_LIKE:
+                tempQuery = ` (not ${this.field.apiName} like ${operatorValue})`;
+                break;
+            default:
+                tempQuery = ` ${this.field.apiName} ${this.operator} ${operatorValue}`;
+                break;
         }
         return tempQuery;
     }

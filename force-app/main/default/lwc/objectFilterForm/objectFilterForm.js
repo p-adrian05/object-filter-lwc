@@ -1,18 +1,22 @@
 import {api, LightningElement, track, wire} from 'lwc';
 import getFieldsBySobjectApiName from '@salesforce/apex/ObjectFilterController.getFieldsBySobjectApiName';
 import {ShowToastEvent} from "lightning/platformShowToastEvent";
+
 export default class ObjectFilterForm extends LightningElement {
-    @api objectApiName;
+
     @track fieldOptions;
-    @api selectedField;
     @track selectedFieldOption;
+    @track selectedInputType = 'text';
+
+    @api objectApiName;
+    @api selectedField;
     @api selectedOperator;
     @api operatorValue;
     @api operatorOptions;
-    @track selectedInputType = 'text';
+
     fieldMap = new Map();
 
-    @wire(getFieldsBySobjectApiName,{sObjectApiName: '$objectApiName'})
+    @wire(getFieldsBySobjectApiName,{sObjectApiName: '$objectApiName',isFormulaIncluded:'true'})
     initFields({error,data}){
         if(data){
             this.fieldMap = new Map();
@@ -29,19 +33,26 @@ export default class ObjectFilterForm extends LightningElement {
             dispatchEvent(event);
         }
     }
+
     @api loadFilter(filter){
         if(filter){
-            this.selectedField = filter.field;
-            this.selectedFieldOption = filter.field.apiName;
-            this.selectedOperator = filter.operator;
-            this.operatorValue = filter.operatorValue;
+            this.selectedInputType = this.getInputTypeByFieldType(filter.field.type);
+            setTimeout(()=>{
+                this.selectedField = filter.field;
+                this.selectedFieldOption = filter.field.apiName;
+                this.selectedOperator = filter.operator;
+                this.operatorValue = filter.operatorValue;
+            },50);
         }
     }
     @api resetForm(){
-        this.selectedField = null;
-        this.selectedFieldOption = null;
-        this.selectedOperator = null;
         this.operatorValue = null;
+        this.selectedField = undefined;
+        this.selectedFieldOption = undefined;
+        this.selectedOperator = undefined;
+        setTimeout(()=>{
+            this.selectedInputType = 'text';
+        },50);
     }
 
 
@@ -56,10 +67,11 @@ export default class ObjectFilterForm extends LightningElement {
     handleOnChangeOperatorInputValue(event){
         this.operatorValue = event.detail.value;
     }
-
-
     getInputTypeByFieldType(fieldType){
         let inputType = 'text';
+        if(!fieldType){
+            return inputType;
+        }
         fieldType = fieldType.toLowerCase();
         switch (fieldType) {
             case 'date':
