@@ -4,8 +4,8 @@
       "path": "force-app",
       "default": true,
       "package": "Object Filter LWC",
-      "versionName": "ver 1.0.1",
-      "versionNumber": "1.0.1.NEXT",
+      "versionName": "ver 1.1.0",
+      "versionNumber": "1.1.0.NEXT",
       "versionDescription": ""
     }
   ],
@@ -18,6 +18,8 @@
     "Object Filter LWC@0.1.0-1": "04t7Q000000YyyhQAC",
     "Object Filter LWC@1.0.0-1": "04t7Q000000YyymQAC",
     "Object Filter LWC@1.0.0-2": "04t7Q000000YyyrQAC",
-    "Object Filter LWC@1.0.1-1": "04t7Q000000YyywQAC"
+    "Object Filter LWC@1.0.1-1": "04t7Q000000YyywQAC",
+    "Object Filter LWC@1.1.0-1": "04t7Q000000YzUaQAK",
+    "Object Filter LWC@1.1.0-2": "04t7Q000000YzUfQAK"
   }
 }
