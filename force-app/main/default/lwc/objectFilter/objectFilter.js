@@ -1,6 +1,5 @@
 import {api, LightningElement, track} from 'lwc';
 import {ShowToastEvent} from "lightning/platformShowToastEvent";
-
 const CONDITION_AND = 'AND';
 const CONDITION_OR = 'OR';
 const CONDITION_CUSTOM = 'CUSTOM';
@@ -35,7 +34,19 @@ const INVALID_CONDITION_LOGIC_WARNING_MESSAGE = 'Invalid input! It can contains 
 const INVALID_FILTER_INDEX_WARNING_MESSAGE = 'Invalid filter index!';
 const NUMBER_FIELD_TYPES = ['datetime', 'date','time', 'integer', 'double', 'percent', 'number', 'currency'];
 const VALID_CUSTOM_LOGIC_INPUT_CHARACTERS = ['(',')','A','N','D','O','R',' '];
+const CANCEL_BUTTON_LABEL_TEXT = 'Cancel';
+const UPDATE_BUTTON_LABEL_TEXT = 'Update';
+const ADD_NEW_FILTER_BUTTON_LABEL_TEXT = 'Add new filter';
+const LOGICAL_ORDER_INPUT_LABEL_TEXT = 'Logical Order';
+
 export default class ObjectFilter extends LightningElement {
+
+    labels = {
+        cancelButtonLabel: CANCEL_BUTTON_LABEL_TEXT,
+        updateButtonLabel: UPDATE_BUTTON_LABEL_TEXT,
+        addNewFilterButtonLabel: ADD_NEW_FILTER_BUTTON_LABEL_TEXT,
+        logicalOrderInputLabel: LOGICAL_ORDER_INPUT_LABEL_TEXT
+    }
 
     @api title = DEFAULT_TITLE;
     @api objectApiName = DEFAULT_OBJECT_API_NAME;
@@ -54,6 +65,9 @@ export default class ObjectFilter extends LightningElement {
 
     @api
     getFilterState(){
+        if(this.filterList.length===0){
+            return null;
+        }
         const filterState = new FilterState();
         filterState.filterList = this.filterList;
         filterState.filterString = this.getQueryFilterString();
@@ -70,7 +84,7 @@ export default class ObjectFilter extends LightningElement {
                 filter.index = filterToLoad.index;
                 return filter;
             });
-
+            this.selectedLogicalCondition = filterState.logicalCondition;
             if(filterState.logicalCondition === CONDITION_CUSTOM){
                 this.showCustomConditionLogicInput = true;
                 this.customLogicalCondition = filterState.logicalOrder;
@@ -78,7 +92,7 @@ export default class ObjectFilter extends LightningElement {
                 this.reIndexFilters();
                 this.customLogicalCondition = this.calculateLogicalOrder();
             }
-            this.selectedLogicalCondition = filterState.logicalCondition;
+
             this.queryString = this.getQueryFilterString();
         }
     }
@@ -160,9 +174,6 @@ export default class ObjectFilter extends LightningElement {
             this.editFilter = true;
             this.openedFilterId = filterToLoad.id;
         }
-    }
-    handleClearAllButton(event){
-      this.resetComponent();
     }
 
     handleRemoveFilter(event){
@@ -294,13 +305,6 @@ export default class ObjectFilter extends LightningElement {
         }
         return filterQuery.trim();
     }
-    showWarningMessage(message,title) {
-        if(!title) title = 'Warning!';
-        const event = new ShowToastEvent({variant: 'warning', title: title, message: String(message)});
-        dispatchEvent(event)
-    }
-
-
 }
 class FilterState{
 
@@ -365,5 +369,10 @@ class Filter{
                 break;
         }
         return tempQuery;
+    }
+    showWarningMessage(message,title) {
+        if(!title) title = 'Warning!';
+        const event = new ShowToastEvent({variant: 'warning', title: title, message: String(message)});
+        dispatchEvent(event)
     }
 }

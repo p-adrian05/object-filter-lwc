@@ -1,25 +1,32 @@
 <template>
-    <template if:true={objectFilters}>
-        <div class="slds-p-top_medium slds-scrollable_y" style="max-height:15rem;">
-            <template for:each={objectFilters} for:item="filter">
-                <article key={filter.id} class="slds-card slds-card_boundary filter_cards ">
-                    <div class="slds-card__header slds-grid">
-                        <div class="slds-media__body top-scrollbars">
-                            <a data-id={filter.id} class="slds-text-link_reset" onclick={handleSelectFilter}>
-                                <h2 class="slds-text-heading_small">
-                                    <span>{filter.index}. </span>
-                                    <span>{filter.field.labelName}</span>
-                                </h2>
-                                <h6>{filter.field.type}</h6>
-                                {filter.field.apiName} {filter.operator} {filter.operatorValue}
-                            </a>
-                        </div>
-                        <div class="slds-no-flex slds-p-left_small slds-p-top_medium">
+    <template if:true={showFilters}>
+        <template if:true={objectFilters}>
+            <div class="slds-p-top_medium slds-scrollable_y slds-p-around_medium slds-card_boundary slds-m-top_medium" style="max-height:15rem;">
+                <template for:each={objectFilters} for:item="filter">
+                    <lightning-layout key={filter.id} >
+                        <lightning-layout-item class="slds-card slds-card_boundary filter_cards slds-button_full-width slds-m-bottom_medium">
+                            <div class="slds-card__header slds-grid slds-button_full-width">
+                                <div class="slds-media__body top-scrollbars">
+                                    <a data-id={filter.id} class="slds-text-link_reset" onclick={handleSelectFilter}>
+                                                <h2 class="slds-text-heading_small">
+                                                    <span>{filter.index}. </span>
+                                                    <span>{filter.field.labelName}</span>
+                                                </h2>
+                                        <lightning-layout>
+                                            <lightning-layout-item flexibility="no-grow">
+                                                <h6 class="detail-span"> {filter.field.apiName} {filter.operator} {filter.operatorValue}</h6>
+                                            </lightning-layout-item>
+                                        </lightning-layout>
+                                    </a>
+                                </div>
+                            </div>
+                        </lightning-layout-item>
+                        <lightning-layout-item class="slds-no-flex slds-p-left_medium slds-m-top_xxx-small">
                             <lightning-button-icon icon-name="action:remove" data-id={filter.id} variant="border-filled" onclick={handleRemoveFilterButton}></lightning-button-icon>
-                        </div>
-                    </div>
-                </article>
-            </template>
-        </div>
+                        </lightning-layout-item>
+                    </lightning-layout>
+                </template>
+            </div>
+        </template>
     </template>
 </template>

@@ -1,9 +1,5 @@
 # Object Filter LWC
-Provides a dynamic multi-filter component for any object.
-
-<a href="https://login.salesforce.com/packaging/installPackage.apexp?p0=04t7Q000000YzUfQAK">
-<img alt="Deploy to Salesforce" src="https://raw.githubusercontent.com/afawcett/githubsfdeploy/master/deploy.png">
-</a>
+Provides a dynamic multi-filter Lightning Web Component for any Salesforce SObject.
 
 ### Attributes
 - object-api-name attribute is required, default is "Account". If using in record detail page, it will be the record object api name of the page automatically.
@@ -54,9 +50,7 @@ Provides a dynamic multi-filter component for any object.
 - loadFilterState(filterState) - load the FilterState object to the component.
 - getQueryFilterString() - return the filterString value of the component.
 ## Images
-![img.png](/documantation/images/objectFilterEmpty.png)
-![img.png](/documantation/images/objectFilterSelectField.png)
-![img.png](/documantation/images/objectFilterWithOperator.png)
-![img.png ](/documantation/images/objectFilterUpdate.png)
-![img.png ](/documantation/images/objectFilterORCondition.png)
-![img.png](/documantation/images/objectFilterCustomCondition.png)
+![img.png](./documantation/images/img.png)
+![img.png](./documantation/images/img_1.png)
+![img.png](./documantation/images/img_2.png)
+![img.png](./documantation/images/img_3.png)

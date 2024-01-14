@@ -1,28 +1,46 @@
 <template>
-    <div>
-        <lightning-combobox
-                options={fieldOptions}
-                value={selectedFieldOption}
-                placeholder="Select a Field"
-                onchange={handleFieldSelected}
-                validity="">
-        </lightning-combobox>
-
-        <lightning-combobox
-                options={operatorOptions}
-                name="Operator"
-                value={selectedOperator}
-                placeholder="Select an Operator"
-                onchange={handleOperatorSelected}
-                validity="">
-        </lightning-combobox>
-
-        <lightning-input
-                type={selectedInputType}
-                onchange={handleOnChangeOperatorInputValue}
-                value={operatorValue}
-                placeholder="Enter value">
-        </lightning-input>
-
-    </div>
+    <lightning-layout horizontal-align="center">
+            <lightning-layout-item class="slds-button_full-width slds-m-right_medium" flexibility="no-grow">
+                <lightning-combobox
+                        class="slds-button_full-width"
+                        options={logicalConditions}
+                        name="logicalCondition"
+                        value={selectedLogicalCondition}
+                        onchange={handleLogicalConditionSelected}
+                        validity="">
+                </lightning-combobox>
+            </lightning-layout-item>
+            <lightning-layout-item class="slds-button_full-width " flexibility="no-grow">
+                <lightning-combobox
+                        class="slds-button_full-width"
+                        options={fieldOptions}
+                        value={selectedFieldOption}
+                        placeholder={labels.fieldSelectorPlaceholderText}
+                        onchange={handleFieldSelected}
+                        validity="">
+                </lightning-combobox>
+            </lightning-layout-item>
+    </lightning-layout>
+    <lightning-layout horizontal-align="center">
+        <lightning-layout-item class="slds-button_full-width slds-m-right_medium" flexibility="no-grow" >
+            <lightning-combobox
+                    class="slds-button_full-width"
+                    options={operatorOptions}
+                    name="Operator"
+                    value={selectedOperator}
+                    placeholder={labels.operatorSelectorPlaceholderText}
+                    onchange={handleOperatorSelected}
+                    validity="">
+            </lightning-combobox>
+        </lightning-layout-item>
+        <lightning-layout-item class="slds-button_full-width" flexibility="no-grow">
+            <lightning-input
+                    class="slds-button_full-width"
+                    type={selectedInputType}
+                    onchange={handleOnChangeOperatorInputValue}
+                    value={operatorValue}
+                    placeholder={labels.valueInputPlaceholderText}>
+            </lightning-input>
+        </lightning-layout-item>
+    </lightning-layout>
 </template>

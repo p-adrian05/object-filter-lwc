@@ -1,12 +1,22 @@
 import {api, LightningElement, track, wire} from 'lwc';
-import getFieldsBySobjectApiName from '@salesforce/apex/ObjectFilterController.getFieldsBySobjectApiName';
 import {ShowToastEvent} from "lightning/platformShowToastEvent";
-
+import getFieldsBySobjectApiName from '@salesforce/apex/ObjectFilterController.getFieldsBySobjectApiName';
+const OPERATOR_SELECTOR_PLACEHOLDER_TEXT = 'Select an operator';
+const VALUE_INPUT_PLACEHOLDER_TEXT = 'Enter value';
+const FIELD_SELECTOR_PLACEHOLDER_TEXT = 'Select a field';
 export default class ObjectFilterForm extends LightningElement {
+
+    labels = {
+        fieldSelectorPlaceholderText: FIELD_SELECTOR_PLACEHOLDER_TEXT,
+        operatorSelectorPlaceholderText: OPERATOR_SELECTOR_PLACEHOLDER_TEXT,
+        valueInputPlaceholderText: VALUE_INPUT_PLACEHOLDER_TEXT,
+    }
 
     @track fieldOptions;
     @track selectedFieldOption;
     @track selectedInputType = 'text';
+    @api logicalConditions = [];
+    @api selectedLogicalCondition;
 
     @api objectApiName;
     @api selectedField;
@@ -29,7 +39,7 @@ export default class ObjectFilterForm extends LightningElement {
         }else if(error){
             this.fieldMap = new Map();
             console.error(JSON.stringify(error));
-            const event = new ShowToastEvent({variant: 'error', title: 'Error!', message: error.body.message});
+            const event = new ShowToastEvent({variant: 'error', title: 'Error!', message: JSON.stringify(error)});
             dispatchEvent(event);
         }
     }
@@ -66,6 +76,15 @@ export default class ObjectFilterForm extends LightningElement {
     }
     handleOnChangeOperatorInputValue(event){
         this.operatorValue = event.detail.value;
+    }
+    handleLogicalConditionSelected(event){
+        this.selectedLogicalCondition = event.detail.value;
+        const selectedLogicalConditionEvent = new CustomEvent('logicalconditionchange', {
+            detail:{
+                value:this.selectedLogicalCondition
+            }
+        })
+        this.dispatchEvent(selectedLogicalConditionEvent);
     }
     getInputTypeByFieldType(fieldType){
         let inputType = 'text';
